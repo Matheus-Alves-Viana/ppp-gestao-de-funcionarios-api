@@ -1,0 +1,338 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "PPP Gestão de Funcionários API",
+    "version": "1.0.0",
+    "description": "API para gestão de funcionários e tarefas de uma empresa."
+  },
+  "servers": [
+    { "url": "/api" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Gerente": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "nome": { "type": "string" },
+          "email": { "type": "string" },
+          "role": { "type": "string", "example": "gerente" }
+        }
+      },
+      "Funcionario": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "nome": { "type": "string" },
+          "email": { "type": "string" },
+          "role": { "type": "string", "example": "funcionario" },
+          "tarefasRealizadas": { "type": "array", "items": { "type": "integer" } }
+        }
+      },
+      "Tarefa": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "titulo": { "type": "string" },
+          "descricao": { "type": "string" },
+          "funcionarioId": { "type": "integer" }
+        }
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string" }
+        }
+      },
+      "Progresso": {
+        "type": "object",
+        "properties": {
+          "totalTarefas": { "type": "integer" },
+          "tarefasRealizadas": { "type": "integer" },
+          "progresso": { "type": "number" },
+          "tarefas": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                { "$ref": "#/components/schemas/Tarefa" },
+                { "type": "object", "properties": { "realizada": { "type": "boolean" } } }
+              ]
+            }
+          }
+        }
+      },
+      "Erro": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        }
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/gerente/registrar": {
+      "post": {
+        "summary": "Registrar gerente",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "email": { "type": "string" },
+                  "senha": { "type": "string" }
+                },
+                "required": ["nome", "email", "senha"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Gerente criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Gerente" } } } },
+          "400": { "description": "Erro de validação", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/gerente/login": {
+      "post": {
+        "summary": "Login gerente",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "senha": { "type": "string" }
+                },
+                "required": ["email", "senha"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Token JWT", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Token" } } } },
+          "401": { "description": "Credenciais inválidas", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/funcionario/registrar": {
+      "post": {
+        "summary": "Registrar funcionário (apenas gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "email": { "type": "string" },
+                  "senha": { "type": "string" }
+                },
+                "required": ["nome", "email", "senha"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Funcionário criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Funcionario" } } } },
+          "400": { "description": "Erro de validação", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a gerentes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/funcionario/login": {
+      "post": {
+        "summary": "Login funcionário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "senha": { "type": "string" }
+                },
+                "required": ["email", "senha"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Token JWT", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Token" } } } },
+          "401": { "description": "Credenciais inválidas", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/funcionarios": {
+      "get": {
+        "summary": "Listar funcionários (apenas gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de funcionários", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Funcionario" } } } } },
+          "401": { "description": "Token não fornecido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a gerentes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/funcionario/{id}": {
+      "get": {
+        "summary": "Buscar dados de funcionário (apenas gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Dados do funcionário", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Progresso" } } } },
+          "401": { "description": "Token não fornecido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a gerentes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "404": { "description": "Funcionário não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      },
+      "put": {
+        "summary": "Editar funcionário (apenas gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Funcionario" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Funcionário editado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Funcionario" } } } },
+          "404": { "description": "Funcionário não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      },
+      "delete": {
+        "summary": "Excluir funcionário (apenas gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "204": { "description": "Funcionário excluído" },
+          "404": { "description": "Funcionário não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/gerente/{id}": {},
+    "/tarefa": {
+      "post": {
+        "summary": "Registrar tarefa (apenas gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "titulo": { "type": "string" },
+                  "descricao": { "type": "string" },
+                  "funcionarioId": { "type": "integer" }
+                },
+                "required": ["titulo", "descricao", "funcionarioId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Tarefa criada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Tarefa" } } } },
+          "400": { "description": "Erro de validação", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a gerentes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/tarefa/{id}": {
+      "put": {
+        "summary": "Editar tarefa (apenas gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Tarefa" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tarefa editada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Tarefa" } } } },
+          "404": { "description": "Tarefa não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      },
+      "delete": {
+        "summary": "Excluir tarefa (apenas gerente)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "204": { "description": "Tarefa excluída" },
+          "404": { "description": "Tarefa não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/tarefa/realizada": {
+      "post": {
+        "summary": "Registrar tarefa realizada (apenas funcionário)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tarefaId": { "type": "integer" }
+                },
+                "required": ["tarefaId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tarefa registrada para funcionário", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Funcionario" } } } },
+          "400": { "description": "Erro de validação", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a funcionários", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/progresso": {
+      "get": {
+        "summary": "Consultar progresso do funcionário (apenas o próprio)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Progresso do funcionário", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Progresso" } } } },
+          "400": { "description": "Erro de validação", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "description": "Token não fornecido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "403": { "description": "Acesso restrito a funcionários", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    }
+  }
+}
