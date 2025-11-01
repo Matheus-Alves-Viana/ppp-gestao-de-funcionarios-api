@@ -8,6 +8,7 @@ Criar uma API Rest para acompanhamento da gestão de funcionarios de uma empresa
 -Para que o funcionario possa consultar seu progresso, ele precisa fazer login como funcionario.
 -funcionarios apenas consultam progresso, gerentes acessam todas as funcionalidades do sistema.
 -Progressão é feita através da comparação de tarefas existentes e das tarefas já realizadas pelo funcionario.
+- gerentes podem editar e excluir dados de usuarios e tarefas
 
 3. Regras
 -Não me pergunte nada, só faça.
