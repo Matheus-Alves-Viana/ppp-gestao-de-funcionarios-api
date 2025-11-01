@@ -9,7 +9,7 @@ describe('Cadastro de Gerente', () => {
                 .post('/api/gerente/registrar')
                 .set('Content-Type', 'application/json')
                 .send({
-                    'nome': 'Matheusd',
+                    'nome': 'Matheusv',
                     'email': 'matheus@teste.com',
                     'senha': '123456'
                 })
