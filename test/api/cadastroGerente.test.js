@@ -1,6 +1,5 @@
 const request = require('supertest');
 const { expect } = require('chai');
-const app = require('../../src/index');
 
 describe('Cadastro de Gerente', () => {
     describe('POST /gerente/registrar', () => {
