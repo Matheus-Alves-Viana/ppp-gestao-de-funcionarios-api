@@ -7,14 +7,17 @@ const postCadastroFuncionario = require('../fixtures/postCadastro.json');
 const postLogin = require('../fixtures/postLogin.json');
 
 describe('Cadastro de Funcionario', () => {
+
+    const bodyLogin = { ...postLogin };
+
+    let token
+    beforeEach(async () => {
+
+        token = await obterToken(bodyLogin);
+    })
+
     describe('POST /funcionario/registrar', () => {
-        const bodyLogin = { ...postLogin };
 
-        let token
-        beforeEach(async () => {
-
-            token = await obterToken(bodyLogin);
-        })
 
         it('deve retornar 201 com criacao de funcionario com credenciais validas ', async () => {
 
@@ -124,8 +127,8 @@ describe('Cadastro de Funcionario', () => {
         it('deve retornar 403 quando tentar registrar um funcionario com token de autenticação inválido', async () => {
             const bodyLoginFuncionario = { ...postLoginFuncionario };
 
-            const  token = await obterTokenFuncionario(bodyLoginFuncionario);
-            
+            const token = await obterTokenFuncionario(bodyLoginFuncionario);
+
             const bodyCadastroFuncionario = { ...postCadastroFuncionario };
             bodyCadastroFuncionario.nome = 'testecomtokeninvalido';
             bodyCadastroFuncionario.email = 'testecomtokeninvalido@teste.com';
@@ -140,4 +143,75 @@ describe('Cadastro de Funcionario', () => {
 
         })
     })
+    describe('GET /funcionarios', () => {
+        it('deve retornar sucesso com 200 e dados iguais ao registro de funcionarios cadastrados', async () => {
+            const resposta = await request(process.env.BASE_URL)
+                .get('/api/funcionarios')
+                .set('Authorization', `Bearer ${token}`)
+
+
+            expect(resposta.status).to.equal(200);
+
+        })
+
+        it('deve retornar usuario em especifico ao ser pesquisado', async () => {
+            const resposta = await request(process.env.BASE_URL)
+                .get('/api/funcionario/1')
+                .set('Authorization', `Bearer ${token}`)
+
+
+            expect(resposta.status).to.equal(200);
+            expect(resposta.body.id).to.equal(1);
+        })
+
+    })
+
+    describe('PUT /funcionario{id}', () => {
+        it('deve retornar sucesso com 200 ao atualizar dados do funcionario', async () => {
+            const bodyAtualizacao = {
+                nome: 'FuncionarioAtualizado',
+                email: 'testesemnome@teste.com'
+
+            };
+            const resposta = await request(process.env.BASE_URL)
+                .put('/api/funcionario/1')
+                .set('Content-Type', 'application/json')
+                .set('Authorization', `Bearer ${token}`)
+                .send(bodyAtualizacao)
+            expect(resposta.status).to.equal(200);
+        })
+
+        it('deve retornar 404 ao tentar atualizar funcionario com email inválido', async () => {
+            const bodyAtualizacao = {
+                nome: 'FuncionarioAtualizado',
+                email: 'naocadastrado@email.com'
+            };
+            const resposta = await request(process.env.BASE_URL)
+                .put('/api/funcionario/9999')
+                .set('Content-Type', 'application/json')
+                .set('Authorization', `Bearer ${token}`)
+                .send(bodyAtualizacao)
+            expect(resposta.status).to.equal(404);
+        });
+
+
+    })
+
+    describe('DELETE /funcionario{id}', () => {
+        it('deve retornar sucesso com 200 ao deletar funcionario', async () => {
+            const resposta = await request(process.env.BASE_URL)
+                .delete('/api/funcionario/1')
+                .set('Authorization', `Bearer ${token}`)
+            expect(resposta.status).to.equal(204);
+        })
+
+        it('deve retornar 404 ao tentar deletar funcionario inexistente', async () => {
+            const resposta = await request(process.env.BASE_URL)
+                .delete('/api/funcionario/9999')
+                .set('Authorization', `Bearer ${token}`)
+            expect(resposta.status).to.equal(404);
+        });
+    })
+
+
 })
