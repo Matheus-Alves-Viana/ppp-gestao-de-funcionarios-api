@@ -2,7 +2,7 @@ const request = require('supertest');
 const { expect } = require('chai');
 const postLogin = require('../fixtures/postLogin.json');
 
-describe('Cadastro de Gerente', () => {
+describe('Login de Gerente', () => {
     describe('POST /gerente/login', () => {
         it('deve retornar 200 com um token em string quando usar credenciais validas ', async () => {
 
