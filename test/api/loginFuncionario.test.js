@@ -71,7 +71,7 @@ describe('Login de Funcionario', () => {
                 .set('Content-Type', 'application/json')
                 .send(bodyLogin)
             expect(resposta.status).to.equal(401);
-        })       
+        })
 
         it('deve retornar 401 quando tentar acessar com conta de gerente', async () => {
             const bodyLoginGerente = { ...postLogin };
@@ -79,12 +79,12 @@ describe('Login de Funcionario', () => {
             const respostaLoginGerente = await request(process.env.BASE_URL)
                 .post('/api/gerente/login')
                 .set('Content-Type', 'application/json')
-                .send(bodyLoginGerente) 
+                .send(bodyLoginGerente)
             expect(respostaLoginGerente.status).to.equal(401);
         })
 
         it('deve retornar 401 quando tentar acessar com conta de funcionario desativado', async () => {
+        })
     })
-})
 })
 

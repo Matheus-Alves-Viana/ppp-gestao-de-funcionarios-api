@@ -212,6 +212,4 @@ describe('Cadastro de Funcionario', () => {
             expect(resposta.status).to.equal(404);
         });
     })
-
-
 })
