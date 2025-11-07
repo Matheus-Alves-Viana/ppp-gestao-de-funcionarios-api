@@ -1,0 +1,42 @@
+name: CI PPP Gestão de Funcionario
+
+# gatilhos 
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Executa diariamente às 03:00 UTC (00:00 em Brasília)
+    - cron: "0 3 * * *"
+
+jobs:
+  tests:
+
+    runs-on: ubuntu-latest
+
+    env:
+      BASE_URL: 'http://localhost:3000'
+
+
+    steps:
+    - name: checkout do repositorio
+      uses: actions/checkout@v4
+
+    - name: instalando dependencias
+      run: npm install
+      
+    - name: Instalar bibliotecas de teste (chai, mocha e supertest)
+      run: npm install --save-dev chai mocha supertest
+  
+    - name: iniciar servidor da aplicacao
+      run: npm start
+
+    - name: executar os testes
+      run: npm test
+      
+
+      
+      
+      
