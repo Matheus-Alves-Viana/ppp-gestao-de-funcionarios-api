@@ -1,6 +1,5 @@
-name: CI PPP Gestão de Funcionario
+name: CI PPP Gestão de Funcionário
 
-# gatilhos 
 on:
   workflow_dispatch:
   push:
@@ -8,35 +7,43 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # Executa diariamente às 03:00 UTC (00:00 em Brasília)
     - cron: "0 3 * * *"
 
 jobs:
   tests:
-
     runs-on: ubuntu-latest
 
     env:
       BASE_URL: 'http://localhost:3000'
 
-
     steps:
-    - name: checkout do repositorio
-      uses: actions/checkout@v4
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
 
-    - name: instalando dependencias
-      run: npm install
-      
-    - name: Instalar bibliotecas de teste (chai, mocha e supertest)
-      run: npm install --save-dev chai mocha supertest
-  
-    - name: iniciar servidor da aplicacao
-      run: npm start
+      - name: 
+        run: |
+          npm install
+          npm install --save-dev chai mocha supertest wait-on
 
-    - name: executar os testes
-      run: npm test
-      
+      - name: ▶️ 
+        run: |
+          npm start &
+          echo "⏳ Aguardando o servidor iniciar..."
+          npx wait-on http://localhost:3000
+        env:
+          NODE_ENV: test
 
-      
-      
-      
+      - name: Executar os testes
+        run: npm test
+        env:
+          NODE_ENV: test
+
+      - name: Encerrar servidor (opcional)
+        if: always()
+        run: |
+          echo "Encerrando servidor..."
+          pkill node || true
+
+      - name: 📊 Exibir status final
+        if: always()
+        run: echo "Testes concluídos — status: ${{ job.status }}"
