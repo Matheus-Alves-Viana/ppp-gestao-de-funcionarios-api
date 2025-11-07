@@ -23,7 +23,7 @@ jobs:
       - name: 📦 Instalar dependências
         run: |
           npm install
-          npm install --save-dev chai mocha supertest
+          npm install --save-dev chai mocha supertest mochawesome
 
       - name: ▶️ Iniciar servidor da aplicação em background
         run: |
