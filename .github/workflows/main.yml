@@ -1,0 +1,48 @@
+name: CI PPP Gestão de Funcionário
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    env:
+      BASE_URL: 'http://localhost:3000'
+
+    steps:
+      - name: 📥 Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: 📦 Instalar dependências
+        run: |
+          npm install
+          npm install --save-dev chai mocha supertest
+
+      - name: ▶️ Iniciar servidor da aplicação em background
+        run: |
+          npm start &
+          echo "⏳ Aguardando 15 segundos para o servidor iniciar..."
+          sleep 15
+          echo "✅ Servidor deve estar pronto agora."
+
+      - name: 🧪 Executar os testes
+        run: npm test
+        env:
+          NODE_ENV: test
+
+      - name: 🛑 Encerrar servidor
+        if: always()
+        run: |
+          echo "Encerrando servidor..."
+          pkill node || true
+
+      - name: 📊 Exibir status final
+        if: always()
+        run: echo "Testes concluídos"
