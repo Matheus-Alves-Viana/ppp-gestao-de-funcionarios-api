@@ -1,4 +1,4 @@
-name: CI PPP Gestão de Funcionário
+name: CI PPP Gestão de Funcionários
 
 on:
   workflow_dispatch:
@@ -7,6 +7,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
+    # Executa diariamente às 03:00 UTC (00:00 em Brasília)
     - cron: "0 3 * * *"
 
 jobs:
@@ -15,34 +16,31 @@ jobs:
 
     env:
       BASE_URL: 'http://localhost:3000'
+      NODE_ENV: 'test'
+      JWT_SECRET: 'segredo_teste'
 
     steps:
       - name: 📥 Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: 📦 Instalar dependências
-        run: |
-          npm install
-          npm install --save-dev chai mocha supertest mochawesome
+      - name: 🧰 Instalar dependências
+        run: npm install
 
-      - name: ▶️ Iniciar servidor da aplicação em background
-        run: |
-          npm start &
-          echo "⏳ Aguardando 15 segundos para o servidor iniciar..."
-          sleep 15
-          echo "✅ Servidor deve estar pronto agora."
+      - name: 🧩 Instalar wait-on (para aguardar o servidor)
+        run: npm install -g wait-on
 
-      - name: 🧪 Executar os testes
+      - name: 🚀 Iniciar servidor da aplicação em background
+        run: |
+          nohup npm start &
+          npx wait-on http://localhost:3000
+        shell: bash
+
+      - name: 🧪 Executar testes (Mocha + Supertest + Mochawesome)
         run: npm test
-        env:
-          NODE_ENV: test
 
-      - name: 🛑 Encerrar servidor
-        if: always()
-        run: |
-          echo "Encerrando servidor..."
-          pkill node || true
-
-      - name: 📊 Exibir status final
-        if: always()
-        run: echo "Testes concluídos"
+      - name: 💾 Salvar relatório Mochawesome como artefato
+        if: always() # salva mesmo que algum teste falhe
+        uses: actions/upload-artifact@v4
+        with:
+          name: mochawesome-report
+          path: mochawesome-report/
