@@ -33,7 +33,7 @@ A documentação da API está disponível em `/api-docs` após iniciar o servido
    ```
 2. Inicie o servidor:
    ```powershell
-   node src/index.js
+   npm start
    ```
 
 ## Banco de Dados
