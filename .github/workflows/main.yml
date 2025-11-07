@@ -7,8 +7,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    # Executa diariamente às 03:00 UTC (00:00 em Brasília)
-    - cron: "0 3 * * *"
+    - cron: "0 3 * * *" # roda diariamente às 03:00 UTC
 
 jobs:
   tests:
@@ -17,6 +16,7 @@ jobs:
     env:
       BASE_URL: 'http://localhost:3000'
       NODE_ENV: 'test'
+      PORT: 3000
       JWT_SECRET: 'segredo_teste'
 
     steps:
@@ -26,12 +26,13 @@ jobs:
       - name: 🧰 Instalar dependências
         run: npm install
 
-      - name: 🧩 Instalar wait-on (para aguardar o servidor)
+      - name: 🧩 Instalar wait-on
         run: npm install -g wait-on
 
       - name: 🚀 Iniciar servidor da aplicação em background
         run: |
           nohup npm start &
+          sleep 5
           npx wait-on http://localhost:3000
         shell: bash
 
@@ -39,7 +40,7 @@ jobs:
         run: npm test
 
       - name: 💾 Salvar relatório Mochawesome como artefato
-        if: always() # salva mesmo que algum teste falhe
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mochawesome-report
