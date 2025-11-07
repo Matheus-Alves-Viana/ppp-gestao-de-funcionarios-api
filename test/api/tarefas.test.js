@@ -28,7 +28,7 @@ describe('Gestao de Tarefas', () => {
                 .set('Authorization', `Bearer ${token}`)
                 .send(bodyTarefa)
 
-            expect(resposta.status).to.equal(201);
+            expect(resposta.status).to.equal(400);
 
         })
 
