@@ -45,4 +45,4 @@ jobs:
 
       - name: 📊 Exibir status final
         if: always()
-        run: echo "Testes concluídos — status: ${{ job.status }}"
+        run: echo "Testes concluídos"
