@@ -23,14 +23,16 @@ jobs:
       - name: 📦 Instalar dependências
         run: |
           npm install
-          npm install --save-dev chai mocha supertest
+          npm install --save-dev chai mocha supertest mochawesome
 
-      - name: ▶️ Iniciar servidor da aplicação em background
+      - name: 🚀 Iniciar servidor e exibir logs em tempo real
         run: |
-          npm start &
-          echo "⏳ Aguardando 15 segundos para o servidor iniciar..."
-          sleep 15
-          echo "✅ Servidor deve estar pronto agora."
+          nohup npm start > server.log 2>&1 &
+          echo "⏳ Aguardando 10 segundos para o servidor iniciar..."
+          sleep 10
+          echo "===== INÍCIO DOS LOGS DO SERVIDOR ====="
+          cat server.log || true
+          echo "===== FIM DOS LOGS DO SERVIDOR ====="
 
       - name: 🧪 Executar os testes
         run: npm test
@@ -45,4 +47,4 @@ jobs:
 
       - name: 📊 Exibir status final
         if: always()
-        run: echo "Testes concluídos"
+        run: echo "✅ Testes concluídos"
