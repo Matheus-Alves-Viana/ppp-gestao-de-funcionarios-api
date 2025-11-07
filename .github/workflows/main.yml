@@ -17,33 +17,27 @@ jobs:
       BASE_URL: 'http://localhost:3000'
 
     steps:
-      - name: Checkout do repositório
+      - name: 📥 Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: 
+      - name: 📦 Instalar dependências
         run: |
           npm install
           npm install --save-dev chai mocha supertest wait-on
 
-      - name: ▶️ 
+      - name: ▶️ Iniciar servidor em background
         run: |
           npm start &
           echo "⏳ Aguardando o servidor iniciar..."
-          npx wait-on http://localhost:3000
+          npx wait-on http-get://localhost:3000/api/gerente
         env:
           NODE_ENV: test
 
-      - name: Executar os testes
+      - name: 🧪 Executar os testes
         run: npm test
         env:
           NODE_ENV: test
 
-      - name: Encerrar servidor (opcional)
+      - name: 🛑 Encerrar servidor
         if: always()
-        run: |
-          echo "Encerrando servidor..."
-          pkill node || true
-
-      - name: 📊 Exibir status final
-        if: always()
-        run: echo "Testes concluídos"
+        run: pkill node || true
